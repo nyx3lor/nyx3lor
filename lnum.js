@@ -19,7 +19,7 @@
     var cache = {};
 
     var LNUM_BASE_URL = 'https://lnum.levende-develop.workers.dev';
-    var LNUM_TOKEN = 'LWqtqs1k1YVVIHSP';
+    var LNUM_TOKEN = '6vFYDYGRPq5';
     var LNUM_COLLECTIONS_BASE_URL = 'https://lnum-collections.levende-develop.workers.dev/list';
     var LNUM_COLLECTIONS_TOKEN = LNUM_TOKEN;
 
