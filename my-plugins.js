@@ -76,17 +76,17 @@
     }
     
     function fix_lang() {
-       Lampa.Lang.add({
-        tv_status_returning_series: { ru: "Идет" },
-        tv_status_planned: { ru: "Запланирован" },
-        tv_status_in_production: { ru: "В производстве" },
-        tv_status_ended: { ru: "Завершен" },
-        tv_status_canceled: { ru: "Отменен" },
-        tv_status_pilot: { ru: "Пилот" },
-        tv_status_released: { ru: "Вышел" },
-        tv_status_rumored: { ru: "По слухам" },
-        tv_status_post_production: { ru: "Скоро" }
-      });
+        Lampa.Lang.add({
+            tv_status_returning_series: { ru: "Идет" },
+            tv_status_planned: { ru: "Запланирован" },
+            tv_status_in_production: { ru: "В производстве" },
+            tv_status_ended: { ru: "Завершен" },
+            tv_status_canceled: { ru: "Отменен" },
+            tv_status_pilot: { ru: "Пилот" },
+            tv_status_released: { ru: "Вышел" },
+            tv_status_rumored: { ru: "По слухам" },
+            tv_status_post_production: { ru: "Скоро" }
+        });
     }
     
     function removeFromSettingsMenu() {
@@ -156,13 +156,11 @@
         $('#interface_custom_showtv').remove();
         
         if (!showtv) {
-            // ВЫКЛЮЧЕНО - прячем TV метку
             var style = "<style id='interface_custom_showtv'>" +
                 ".card__type::after { content: '' !important; }" +
                 "</style>";
             $('body').append(style);
         }
-        // Если включено - не применяем стили, метка TV показывается по умолчанию
     }
     
     function bigbuttons() {
