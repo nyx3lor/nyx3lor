@@ -72,7 +72,7 @@
 
     var ui_customizer = {
         name: 'ui_customizer',
-        version: '1.0.0'
+        version: '1.0.1'  // Обновлена версия
     };
 
     var onetime = false;
@@ -239,44 +239,25 @@
 
     function applySeriesLabel() {
         var show_series = localStorage.getItem('ui_customizer_series_label') === 'true';
-        var series_caption = Lampa.Lang.translate('ui_customizer_series_caption');
-        var style_id = '#ui_customizer_series';
-        $(style_id).remove();
+        var series_caption = Lampa.Lang.translate('ui_customizer_series_caption') || 'SERIES';
 
-        var series_style;
+        $('#ui_customizer_series').remove();
+
+        var style = $('<style id="ui_customizer_series"></style>');
+        $('body').append(style);
+        var sheet = style[0].sheet;
+
         if (show_series) {
-            // Показываем метку "СЕРИАЛ" вместо "TV"
-            series_style = `
-            <style id="ui_customizer_series">
-                .card__type {
-                    display: none;
-                }
-                .card--tv .card__type::after {
-                    content: "${series_caption}";
-                    display: block;
-                    background: linear-gradient(to right, #1e6262dd, #3da18ddd);
-                    color: white;
-                    padding: 0.2em 0.4em;
-                    border-radius: 0.25em;
-                    font-size: 0.8em;
-                    font-weight: bold;
-                }
-            </style>
-            `;
+            // Скрываем оригинальный .card__type и добавляем кастом ::after с меткой
+            sheet.insertRule('.card__type { display: none; }', sheet.cssRules.length);
+            var escaped_caption = series_caption.replace(/"/g, '\\"');
+            var rule = `.card--tv .card__type::after { content: "${escaped_caption}"; display: block; background: linear-gradient(to right, #1e6262dd, #3da18ddd); color: white; padding: 0.2em 0.4em; border-radius: 0.25em; font-size: 0.8em; font-weight: bold; position: absolute; top: 0.5em; left: 0.5em; z-index: 5; }`;
+            sheet.insertRule(rule, sheet.cssRules.length);
         } else {
-            // Скрываем полностью
-            series_style = `
-            <style id="ui_customizer_series">
-                .card__type, .card--tv .card__type {
-                    display: none !important;
-                }
-                .card--tv .card__type::after {
-                    display: none !important;
-                }
-            </style>
-            `;
+            // Полностью скрываем
+            sheet.insertRule('.card__type, .card--tv .card__type { display: none !important; }', sheet.cssRules.length);
+            sheet.insertRule('.card--tv .card__type::after { display: none !important; }', sheet.cssRules.length);
         }
-        $('body').append(series_style);
     }
 
     function applyBigButtons() {
@@ -461,7 +442,7 @@
 
     Lampa.Manifest.plugins = {
         name: 'ui_customizer',
-        version: '1.0.0',
+        version: '1.0.1',
         description: 'UI Customizer for Lampac'
     };
 
