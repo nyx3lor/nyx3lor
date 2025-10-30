@@ -3,15 +3,15 @@
     
     Lampa.Lang.add({
         maxsm_themes: {
-            ru: "Темы",
-            en: "Themes",
-            uk: "Теми",
-            be: "Тэмы",
-            zh: "主题",
-            pt: "Temas",
-            bg: "Теми",
-            he: "ערכות נושא",
-            cs: "Témata"
+            ru: "Оформление интерфейса",
+            en: "Interface Design",
+            uk: "Оформлення інтерфейсу",
+            be: "Афармленне інтэрфейсу",
+            zh: "界面设计",
+            pt: "Design de Interface",
+            bg: "Оформление на интерфейса",
+            he: "עיצוב ממשק",
+            cs: "Návrh rozhraní"
         },
         maxsm_themes_translate_tv: {
             ru: "Переводить TV",
@@ -81,8 +81,6 @@
     var onetime = false;
 
     // Цвета loader'а для каждой темы
-    
-
     // Функция для применения тем
     function applySettings() {
         translate_tv();
