@@ -13,17 +13,6 @@
             he: "שיפורי UI",
             cs: "Vylepšení UI"
         },
-        ui_enhancer_animations: {
-            ru: "Анимации",
-            en: "Animations",
-            uk: "Анімації",
-            be: "Анімацыі",
-            zh: "动画",
-            pt: "Animações",
-            bg: "Анимации",
-            he: "אנימציות",
-            cs: "Animace"
-        },
         ui_enhancer_incardtemplate: {
             ru: "Макет содержимого карточки",
             en: "Card content layout",
@@ -48,6 +37,12 @@
         }
     });
 
+    // SVG-иконка для настроек (шестеренка для UI-улучшений)
+    var uiIcon = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+        '<circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>' +
+        '<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06 .06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2H5.09a1.65 1.65 0 0 0 1.1-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.1 1z" stroke="currentColor" stroke-width="2"/>' +
+        '</svg>';
+
     // Основной объект плагина
     var ui_enhancer = {
         // Название плагина
@@ -61,7 +56,7 @@
     // Запускаем только один раз
     var onetime = false;
 
-    // Функция для применения фиксированных улучшений (без тем)
+    // Функция для применения фиксированных улучшений (без анимаций)
     function applyEnhancements() {
         if (onetime === false) {
             onetime = true;
@@ -69,7 +64,6 @@
             removeFromSettingsMenu();
             incardtemplate();
         }
-        animations();
         bigbuttons();
     }
     
@@ -106,7 +100,7 @@
         Lampa.Template.add('card', "<div class=\"card selector layer--visible layer--render\">\n    <div class=\"card__view\">\n        <img src=\"./img/img_load.svg\" class=\"card__img\" />\n\n        <div class=\"card__icons\">\n            <div class=\"card__icons-inner\">\n                \n            </div>\n        </div>\n    <div class=\"card__age\">{release_year}</div>\n    </div>\n\n    <div class=\"card__title\">{title}</div>\n    </div>");
         // Шаблон карточки выхода эпизода, выкинем футер из card_episode, год и название на карточку
         Lampa.Template.add('card_episode', "<div class=\"card-episode selector layer--visible layer--render\">\n    <div class=\"card-episode__body\">\n        <div class=\"full-episode\">\n            <div class=\"full-episode__img\">\n                <img />\n            </div>\n\n            <div class=\"full-episode__body\">\n     <div class=\"card__title\">{title}</div>\n            <div class=\"card__age\">{release_year}</div>\n            <div class=\"full-episode__num hide\">{num}</div>\n                <div class=\"full-episode__name\">{name}</div>\n                <div class=\"full-episode__date\">{date}</div>\n            </div>\n        </div>\n    </div>\n    <div class=\"card-episode__footer hide\">\n        <div class=\"card__imgbox\">\n            <div class=\"card__view\">\n                <img class=\"card__img\" />\n            </div>\n        </div>\n\n        <div class=\"card__left\">\n            <div class=\"card__title\">{title}</div>\n            <div class=\"card__age\">{release_year}</div>\n        </div>\n    </div>\n</div>");
-        // Стили (нейтральные, без цветовых тем; скрытие иконки TV)
+        // Стили (нейтральные; скрытие иконки TV)
         var forall_style = "\n<style id=\"ui_enhancer_forall\">\n " +
             // По центру в мобилке
             "@media screen and (max-width: 480px) { .full-start-new__head, .full-start-new__title, .full-start__title-original, .full-start__rate, .full-start-new__reactions, .full-start-new__rate-line, .full-start-new__buttons, .full-start-new__details, .full-start-new__tagline { -webkit-justify-content: center; justify-content: center; text-align: center; }\n" +
@@ -168,27 +162,6 @@
         }
     }
     
-    function animations() {
-        var animations = localStorage.getItem('ui_enhancer_animations') === 'true';
-        $('#ui_enhancer_animations').remove();
-        if (animations) {
-            var animations_style = "\n<style id=\"ui_enhancer_animations\">\n " +
-                // Пробуем немного анимаций
-                ".card\n{transform: scale(1);\ntransition: transform 0.3s ease;\n}\n" +
-                ".card.focus\n{transform: scale(1.03);\n}\n" +
-                ".torrent-item,\n.online-prestige\n{transform: scale(1);\ntransition: transform 0.3s ease;\n}\n" +
-                ".torrent-item.focus,\n.online-prestige.focus\n{transform: scale(1.01);\n}\n" +
-                ".extensions__item,\n.extensions__block-add,\n.full-review-add,\n.full-review,\n.tag-count,\n.full-person,\n.full-episode,\n.simple-button,\n.full-start__button,\n.items-cards .selector,\n.card-more,\n.explorer-card__head-img.selector,\n.card-episode\n{transform: scale(1);\ntransition: transform 0.3s ease;\n}\n" +
-                ".extensions__item.focus,\n.extensions__block-add.focus,\n.full-review-add.focus,\n.full-review.focus,\n.tag-count.focus,\n.full-person.focus,\n.full-episode.focus,\n.simple-button.focus,\n.full-start__button.focus,\n.items-cards .selector.focus,\n.card-more.focus,\n.explorer-card__head-img.selector.focus,\n.card-episode.focus\n{transform: scale(1.03);\n}\n" +
-                ".menu__item {\n  transition: transform 0.3s ease;\n}\n" +
-                ".menu__item.focus {\n transform: translateX(-0.2em);\n}\n" +
-                ".selectbox-item,\n.settings-folder,\n.settings-param {\n transition: transform 0.3s ease;\n}\n" +
-                ".selectbox-item.focus,\n.settings-folder.focus,\n.settings-param.focus {\n transform: translateX(0.2em);\n}\n" +
-            "</style>\n";
-            $('body').append(animations_style);
-        }
-    }
-    
     function bigbuttons() {
         var bigbuttons = localStorage.getItem('ui_enhancer_bigbuttons')  === 'true';
         $('#ui_enhancer_bigbuttons').remove();
@@ -203,9 +176,6 @@
     // Функция инициализации плагина
     function startPlugin() {
         // Значения по умолчанию
-        if (!localStorage.getItem('ui_enhancer_animations')) {
-            localStorage.setItem('ui_enhancer_animations', 'true');
-        }
         if (!localStorage.getItem('ui_enhancer_incardtemplate')) {
             localStorage.setItem('ui_enhancer_incardtemplate', 'false');
         }   
@@ -216,23 +186,7 @@
         Lampa.SettingsApi.addComponent({
             component: "ui_enhancer",
             name: Lampa.Lang.translate('ui_enhancer'),
-            icon: ''
-        });
-        
-        Lampa.SettingsApi.addParam({
-            component: 'ui_enhancer',
-            param: {
-                name: 'ui_enhancer_animations',
-                type: "trigger",
-                default: true
-            },
-            field: {
-                name: Lampa.Lang.translate('ui_enhancer_animations'),
-                description: ''
-            },
-            onChange: function(value) {
-                animations();
-            }
+            icon: uiIcon
         });
         
         Lampa.SettingsApi.addParam({
