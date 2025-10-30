@@ -2,29 +2,18 @@
     'use strict';
     
     Lampa.Lang.add({
-        ui_customizer: {
-            ru: "Кастомизация UI",
-            en: "UI Customizer",
-            uk: "Кастомізація UI",
-            be: "Кастамізацыя UI",
-            zh: "UI 自定义",
-            pt: "Personalizador de UI",
-            bg: "Персонализиране на UI",
-            he: "התאמה אישית של UI",
-            cs: "Přizpůsobení UI"
+        ui_enhancer: {
+            ru: "Улучшения UI",
+            en: "UI Enhancements",
+            uk: "Покращення UI",
+            be: "Пакульваньне UI",
+            zh: "UI 改进",
+            pt: "Melhorias de UI",
+            bg: "Подобрения на UI",
+            he: "שיפורי UI",
+            cs: "Vylepšení UI"
         },
-        ui_customizer_incardtemplate: {
-            ru: "Макет содержимого карточки",
-            en: "Card content layout",
-            uk: "Макет вмісту картки",
-            be: "Макет змесціва карткі",
-            zh: "卡片内容布局",
-            pt: "Layout do conteúdo do cartão",
-            bg: "Оформление на съдържанието в картата",
-            he: "פריסת תוכן בכרטיס",
-            cs: "Rozvržení obsahu karty"
-        },
-        ui_customizer_animations: {
+        ui_enhancer_animations: {
             ru: "Анимации",
             en: "Animations",
             uk: "Анімації",
@@ -35,18 +24,18 @@
             he: "אנימציות",
             cs: "Animace"
         },
-        ui_customizer_series_caption: {
-            ru: "СЕРИАЛ",       
-            en: "SERIES",   
-            uk: "СЕРІАЛ",    
-            be: "СЕРЫЯЛ",     
-            zh: "剧集",       
-            pt: "SÉRIE",     
-            bg: "СЕРИАЛ",      
-            he: "סִדְרָה",  
-            cs: "SERIÁL" 
+        ui_enhancer_incardtemplate: {
+            ru: "Макет содержимого карточки",
+            en: "Card content layout",
+            uk: "Макет вмісту картки",
+            be: "Макет змесціва карткі",
+            zh: "卡片内容布局",
+            pt: "Layout do conteúdo do cartão",
+            bg: "Оформление на съдържанието в картата",
+            he: "פריסת תוכן בכרטיס",
+            cs: "Rozvržení obsahu karty"
         },
-        ui_customizer_bigbuttons: {
+        ui_enhancer_bigbuttons: {
             ru: "Большие кнопки в карточке",
             en: "Large buttons in card",
             uk: "Великі кнопки в картці",
@@ -60,572 +49,32 @@
     });
 
     // Основной объект плагина
-    var ui_customizer = {
+    var ui_enhancer = {
         // Название плагина
-        name: 'ui_customizer',
+        name: 'ui_enhancer',
         // Версия плагина
-        version: '1.0.5',  // Обновлена для адаптации
+        version: '1.0.0',
         // Настройки по умолчанию
-        settings: {
-            theme: 'mint_dark'  // Фиксированная базовая тема
-        }
+        settings: {}
     };
 
     // Запускаем только один раз
     var onetime = false;
-    var seriesObserver = null;
 
-    // Функция для применения кастомизаций (адаптировано от applyTheme)
-    function applyCustomizations() {
-        // Удаляем предыдущие стили
-        $('#ui_customizer_theme').remove();
-        $('#ui_customizer_animations').remove();
-        $('#ui_customizer_bigbuttons').remove();
-        $('#ui_customizer_forall').remove();
-        $('#ui_customizer_series_label').remove();
-
-        // Базовые стили для фиксированной темы (mint_dark, адаптировано под новый Lampa)
-        var base_styles = `
-        <style id="ui_customizer_theme">
-            .navigation-bar__body {
-                background: rgba(18, 32, 36, 0.96);
-            }
-            .card__quality,
-            .card__type::after {
-                background: linear-gradient(to right, #1e6262dd, #3da18ddd);
-            }
-            html, body, .extensions {
-                background: linear-gradient(135deg, #0a1b2a, #1a4036);
-                color: #ffffff;
-            }
-            .company-start.icon--broken .company-start__icon,
-            .explorer-card__head-img > img,
-            .bookmarks-folder__layer,
-            .card-more__box,
-            .card__img,
-            .extensions__block-add,
-            .extensions__item {
-                background-color: #1e2c2f;
-            }
-            .search-source.focus,
-            .simple-button.focus,
-            .menu__item.focus,
-            .menu__item.traverse,
-            .menu__item.hover,
-            .full-start__button.focus,
-            .full-descr__tag.focus,
-            .player-panel .button.focus,
-            .full-person.selector.focus,
-            .tag-count.selector.focus,
-            .full-review.focus {
-                background: linear-gradient(to right, #1e6262, #3da18d);
-                color: #fff;
-                box-shadow: 0 0.0em 0.4em rgba(61, 161, 141, 0.0);
-            }
-            .selectbox-item.focus,
-            .settings-folder.focus,
-            .settings-param.focus {
-                background: linear-gradient(to right, #1e6262, #3da18d);
-                color: #fff;
-                box-shadow: 0 0.0em 0.4em rgba(61, 161, 141, 0.0);
-                border-radius: 0.5em 0 0 0.5em;
-            }
-            .full-episode.focus::after,
-            .card-episode.focus .full-episode::after,
-            .items-cards .selector.focus::after,
-            .card-more.focus .card-more__box::after,
-            .card-episode.focus .full-episode::after,
-            .card-episode.hover .full-episode::after,
-            .card.focus .card__view::after,
-            .card.hover .card__view::after,
-            .torrent-item.focus::after,
-            .online-prestige.selector.focus::after,
-            .online-prestige--full.selector.focus::after,
-            .explorer-card__head-img.selector.focus::after,
-            .extensions__item.focus::after,
-            .extensions__block-add.focus::after,
-            .full-review-add.focus::after {
-                border: 0.2em solid #3da18d;
-                box-shadow: 0 0 0.8em rgba(61, 161, 141, 0.0);
-            }
-            .head__action.focus,
-            .head__action.hover {
-                background: linear-gradient(45deg, #3da18d, #1e6262);
-            }
-            .modal__content {
-                background: rgba(18, 32, 36, 0.96);
-                border: 0em solid rgba(18, 32, 36, 0.96);
-            }
-            .settings__content,
-            .settings-input__content,
-            .selectbox__content,
-            .settings-input {
-                background: rgba(18, 32, 36, 0.96);
-            }
-            .torrent-serial {
-                background: rgba(0, 0, 0, 0.22);
-                border: 0.2em solid rgba(0, 0, 0, 0.22);
-            }
-            .torrent-serial.focus {
-                background-color: #1a3b36cc;
-                border: 0.2em solid #3da18d;
-            }
-        </style>
-        `;
-        $('head').append(base_styles);
-
-        // Всегда применяем замену лейбла сериалов (без toggle)
-        applySeriesLabel();
-
-        // Стили для всех элементов (forall, как в оригинале)
-        var forall_style = `
-        <style id="ui_customizer_forall">
-            @media screen and (max-width: 480px) {
-                .full-start-new__head, .full-start-new__title, .full-start__title-original, .full-start__rate, .full-start-new__reactions, .full-start-new__rate-line, .full-start-new__buttons, .full-start-new__details, .full-start-new__tagline {
-                    -webkit-justify-content: center;
-                    justify-content: center;
-                    text-align: center;
-                }
-                .full-start__title-original {
-                    max-width: 100%;
-                }
-            }
-            @media screen and (max-width: 480px) {
-                .full-start-new__right {
-                    background: -webkit-gradient(linear, left top, left bottom, from(rgba(0, 0, 0, 0)), to(rgba(0, 0, 0, 0)));
-                    background: -webkit-linear-gradient(top, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);
-                    background: -o-linear-gradient(top, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);
-                    background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);
-                }
-            }
-            .selectbox-item__checkbox {
-                border-radius: 100%;
-            }
-            .selectbox-item--checked .selectbox-item__checkbox {
-                background: #ccc;
-            }
-            .full-start-new__rate-line .full-start__pg {
-                font-size: 1em;
-                background: #fff;
-                color: #000;
-            }
-            .full-start__rate {
-                border-radius: 0.25em;
-                padding: 0.3em;
-                background-color: rgba(0, 0, 0, 0.3);
-            }
-            .card__title {
-                height: 3.6em;
-                text-overflow: ellipsis;
-                -o-text-overflow: ellipsis;
-                -webkit-line-clamp: 3;
-                line-clamp: 3;
-            }
-            .card__age {
-                position: absolute;
-                right: 0em;
-                bottom: 0em;
-                z-index: 10;
-                background: rgba(0, 0, 0, 0.6);
-                color: #ffffff;
-                font-weight: 700;
-                padding: 0.4em 0.6em;
-                -webkit-border-radius: 0.48em 0 0.48em 0;
-                -moz-border-radius: 0.48em 0 0.48em 0;
-                border-radius: 0.48em 0 0.48em 0;
-                line-height: 1.0;
-                font-size: 1.0em;
-            }
-            .card__vote {
-                position: absolute;
-                bottom: auto;
-                right: 0em;
-                top: 0em;
-                background: rgba(0, 0, 0, 0.6);
-                font-weight: 700;
-                color: #fff;
-                -webkit-border-radius: 0 0.34em 0 0.34em;
-                -moz-border-radius: 0 0.34em 0 0.34em;
-                border-radius: 0 0.34em 0 0.34em;
-                line-height: 1.0;
-                font-size: 1.4em;
-            }
-            .card__icons {
-                position: absolute;
-                top: 2em;
-                left: 0;
-                right: auto;
-                display: -webkit-box;
-                display: -webkit-flex;
-                display: -moz-box;
-                display: -ms-flexbox;
-                display: flex;
-                -webkit-box-pack: center;
-                -webkit-justify-content: center;
-                -moz-box-pack: center;
-                -ms-flex-pack: center;
-                justify-content: center;
-                background: rgba(0, 0, 0, 0.6);
-                color: #fff;
-                -webkit-border-radius: 0 0.5em 0.5em 0;
-                -moz-border-radius: 0 0.5em 0.5em 0;
-                border-radius: 0 0.5em 0.5em 0;
-            }
-            .card__icons-inner {
-                background: rgba(0, 0, 0, 0);
-            }
-            .card__marker {
-                position: absolute;
-                left: 0em;
-                top: 4em;
-                bottom: auto;
-                background: rgba(0, 0, 0, 0.6);
-                -webkit-border-radius: 0 0.5em 0.5em 0;
-                -moz-border-radius: 0 0.5em 0.5em 0;
-                border-radius: 0 0.5em 0.5em 0;
-                font-weight: 700;
-                font-size: 1.0em;
-                padding: 0.4em 0.6em;
-                display: -webkit-box;
-                display: -webkit-flex;
-                display: -moz-box;
-                display: -ms-flexbox;
-                display: flex;
-                -webkit-box-align: center;
-                -webkit-align-items: center;
-                -moz-box-align: center;
-                -ms-flex-align: center;
-                align-items: center;
-                line-height: 1.2;
-                max-width: min(12em, 95%);
-                box-sizing: border-box;
-            }
-            .card__marker > span {
-                max-width: min(12em, 95%);
-            }
-            .items-line.items-line--type-cards + .items-line.items-line--type-cards {
-                margin-top: 1em;
-            }
-            .card--small .card__view {
-                margin-bottom: 2em;
-            }
-            .items-line--type-cards {
-                min-height: 18em;
-            }
-            @media screen and (min-width: 580px) {
-                .full-start-new {
-                    min-height: 80vh;
-                    display: flex;
-                }
-            }
-            .full-start__background.loaded {
-                opacity: 0.8;
-            }
-            .full-start__background.dim {
-                opacity: 0.2;
-            }
-            .explorer__files .torrent-filter .simple-button {
-                font-size: 1.2em;
-                -webkit-border-radius: 0.5em;
-                -moz-border-radius: 0.5em;
-                border-radius: 0.5em;
-            }
-            .full-review-add,
-            .full-review,
-            .extensions__item,
-            .extensions__block-add,
-            .search-source,
-            .bookmarks-folder__layer,
-            .bookmarks-folder__body,
-            .card__img,
-            .card__promo,
-            .full-episode--next .full-episode__img:after,
-            .full-episode__img img,
-            .full-episode__body,
-            .full-person__photo,
-            .card-more__box,
-            .full-start__button,
-            .simple-button,
-            .register {
-                border-radius: 0.5em;
-            }
-            .extensions__item.focus::after,
-            .extensions__block-add.focus::after,
-            .full-episode.focus::after,
-            .full-review-add.focus::after,
-            .card-parser.focus::after,
-            .card-episode.focus .full-episode::after,
-            .card-episode.hover .full-episode::after,
-            .card.focus .card__view::after,
-            .card.hover .card__view::after,
-            .card-more.focus .card-more__box::after,
-            .register.focus::after {
-                border-radius: 1em;
-            }
-            .search-source.focus,
-            .simple-button.focus,
-            .menu__item.focus,
-            .menu__item.traverse,
-            .menu__item.hover,
-            .full-start__button.focus,
-            .full-descr__tag.focus,
-            .player-panel .button.focus,
-            .full-person.selector.focus,
-            .tag-count.selector.focus {
-                border-radius: 0.5em;
-            }
-            .menu__item.focus {
-                border-radius: 0 0.5em 0.5em 0;
-            }
-            .menu__list {
-                padding-left: 0em;
-            }
-            .menu__item.focus .menu__ico {
-                -webkit-filter: invert(1);
-                filter: invert(1);
-            }
-        </style>
-        `;
-        $('body').append(forall_style);
-
-        // Всегда скрываем оригинальный .card__type для TV (адаптировано)
-        var series_hide_style = `
-        <style id="ui_customizer_series_label">
-            .card__type {
-                display: none !important;
-            }
-            .card--tv .card__type.original-type {
-                display: none !important;
-            }
-        </style>
-        `;
-        $('body').append(series_hide_style);
-
-        // Применяем toggles
-        animations();
-        bigbuttons();
-
+    // Функция для применения фиксированных улучшений (без тем)
+    function applyEnhancements() {
         if (onetime === false) {
             onetime = true;
-            incardtemplate();
+            forall();
             removeFromSettingsMenu();
+            incardtemplate();
         }
+        animations();
+        bigbuttons();
     }
-
-    // Динамическая замена лейбла сериалов (всегда активна, observer для новых карточек)
-    function applySeriesLabel() {
-        var series_caption = Lampa.Lang.translate('ui_customizer_series_caption') || 'SERIES';
-
-        // Удаляем старый observer
-        if (seriesObserver) {
-            seriesObserver.disconnect();
-        }
-
-        // MutationObserver для .card--tv (адаптировано под новый рендер Lampa)
-        seriesObserver = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
-                if (mutation.type === 'childList') {
-                    mutation.addedNodes.forEach(function(node) {
-                        if (node.nodeType === 1 && node.classList && node.classList.contains('card--tv')) {
-                            updateSeriesLabel(node);
-                        }
-                    });
-                }
-            });
-        });
-
-        seriesObserver.observe(document.body, {
-            childList: true,
-            subtree: true
-        });
-
-        // Применяем к существующим
-        document.querySelectorAll('.card--tv').forEach(function(card) {
-            updateSeriesLabel(card);
-        });
-
-        function updateSeriesLabel(card) {
-            if (!card) return;
-            var view = card.querySelector('.card__view');
-            if (!view) return;
-
-            // Скрываем оригинал (если есть)
-            var originalType = card.querySelector('.card__type.original-type') || card.querySelector('.card__type');
-            if (originalType) {
-                originalType.classList.add('original-type');
-                originalType.style.display = 'none';
-            }
-
-            // Добавляем/обновляем кастомный лейбл
-            var typeEl = card.querySelector('.card__type.custom-series');
-            if (!typeEl) {
-                typeEl = document.createElement('div');
-                typeEl.className = 'card__type custom-series';
-                view.insertBefore(typeEl, view.firstChild);  // В начало view для позиционирования
-            }
-
-            typeEl.textContent = series_caption;
-            typeEl.style.display = 'block';
-            typeEl.style.position = 'absolute';
-            typeEl.style.top = '0.5em';
-            typeEl.style.left = '0.5em';
-            typeEl.style.zIndex = '5';
-            typeEl.style.background = 'linear-gradient(to right, #1e6262dd, #3da18ddd)';
-            typeEl.style.color = 'white';
-            typeEl.style.padding = '0.2em 0.4em';
-            typeEl.style.borderRadius = '0.25em';
-            typeEl.style.fontSize = '0.8em';
-            typeEl.style.fontWeight = 'bold';
-        }
-    }
-
-    // Шаблоны для макета карточки (как в оригинале, с переносом года)
-    function incardtemplate() {
-        var incardtemplate = Lampa.Storage.get('ui_customizer_incardtemplate') === 'true';
-        if (incardtemplate) {
-            // Шаблон карточки с годом выше
-            Lampa.Template.add('card', `<div class="card selector layer--visible layer--render">
-                <div class="card__view">
-                    <img src="./img/img_load.svg" class="card__img" />
-                    <div class="card__icons">
-                        <div class="card__icons-inner"></div>
-                    </div>
-                    <div class="card__age">{release_year}</div>
-                </div>
-                <div class="card__title">{title}</div>
-            </div>`);
-
-            // Шаблон эпизода с годом
-            Lampa.Template.add('card_episode', `<div class="card-episode selector layer--visible layer--render">
-                <div class="card-episode__body">
-                    <div class="full-episode">
-                        <div class="full-episode__img">
-                            <img />
-                        </div>
-                        <div class="full-episode__body">
-                            <div class="card__title">{title}</div>
-                            <div class="card__age">{release_year}</div>
-                            <div class="full-episode__num hide">{num}</div>
-                            <div class="full-episode__name">{name}</div>
-                            <div class="full-episode__date">{date}</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-episode__footer hide">
-                    <div class="card__imgbox">
-                        <div class="card__view">
-                            <img class="card__img" />
-                        </div>
-                    </div>
-                    <div class="card__left">
-                        <div class="card__title">{title}</div>
-                        <div class="card__age">{release_year}</div>
-                    </div>
-                </div>
-            </div>`);
-        }
-    }
-
-    function animations() {
-        var animations = Lampa.Storage.get('ui_customizer_animations') === 'true';
-        $('#ui_customizer_animations').remove();
-        if (animations) {
-            var animations_style = `
-            <style id="ui_customizer_animations">
-                .card {
-                    transform: scale(1);
-                    transition: transform 0.3s ease;
-                }
-                .card.focus {
-                    transform: scale(1.03);
-                }
-                .torrent-item,
-                .online-prestige {
-                    transform: scale(1);
-                    transition: transform 0.3s ease;
-                }
-                .torrent-item.focus,
-                .online-prestige.focus {
-                    transform: scale(1.01);
-                }
-                .extensions__item,
-                .extensions__block-add,
-                .full-review-add,
-                .full-review,
-                .tag-count,
-                .full-person,
-                .full-episode,
-                .simple-button,
-                .full-start__button,
-                .items-cards .selector,
-                .card-more,
-                .explorer-card__head-img.selector,
-                .card-episode {
-                    transform: scale(1);
-                    transition: transform 0.3s ease;
-                }
-                .extensions__item.focus,
-                .extensions__block-add.focus,
-                .full-review-add.focus,
-                .full-review.focus,
-                .tag-count.focus,
-                .full-person.focus,
-                .full-episode.focus,
-                .simple-button.focus,
-                .full-start__button.focus,
-                .items-cards .selector.focus,
-                .card-more.focus,
-                .explorer-card__head-img.selector.focus,
-                .card-episode.focus {
-                    transform: scale(1.03);
-                }
-                .menu__item {
-                    transition: transform 0.3s ease;
-                }
-                .menu__item.focus {
-                    transform: translateX(-0.2em);
-                }
-                .selectbox-item,
-                .settings-folder,
-                .settings-param {
-                    transition: transform 0.3s ease;
-                }
-                .selectbox-item.focus,
-                .settings-folder.focus,
-                .settings-param.focus {
-                    transform: translateX(0.2em);
-                }
-            </style>
-            `;
-            $('body').append(animations_style);
-        }
-    }
-
-    function bigbuttons() {
-        var bigbuttons = Lampa.Storage.get('ui_customizer_bigbuttons') === 'true';
-        $('#ui_customizer_bigbuttons').remove();
-        if (bigbuttons) {
-            var bigbuttons_style = `
-            <style id="ui_customizer_bigbuttons">
-                .full-start-new__buttons .full-start__button:not(.focus) span {
-                    display: inline;
-                }
-                @media screen and (max-width: 580px) {
-                    .full-start-new__buttons {
-                        overflow: auto;
-                    }
-                    .full-start-new__buttons .full-start__button:not(.focus) span {
-                        display: none;
-                    }
-                }
-            </style>
-            `;
-            $('body').append(bigbuttons_style);
-        }
-    }
-
+    
     function removeFromSettingsMenu() {
-        // Скрываем несовместимые настройки (как в оригинале)
+        // Скрываем всё, что плохо сочетается с плагином
         Lampa.Settings.listener.follow('open', function(e) {
             if (e.name == 'interface') {
                 e.body.find('[data-name="light_version"]').remove();
@@ -641,7 +90,7 @@
                 e.body.find('[data-name="advanced_animation"]').remove();
             }
         });
-        // Устанавливаем значения по умолчанию
+        // Настройки интерфейса под улучшения
         Lampa.Storage.set('light_version', 'false');
         Lampa.Storage.set('background', 'false');
         Lampa.Storage.set('card_interfice_type', 'new');
@@ -650,82 +99,179 @@
         Lampa.Storage.set('card_interfice_cover', 'true');
         Lampa.Storage.set('advanced_animation', 'false');
     }
+    
+    // Дополнительные шаблоны, не меняющиеся
+    function forall() {
+        // Шаблон карточки, где год перенесен выше названия
+        Lampa.Template.add('card', "<div class=\"card selector layer--visible layer--render\">\n    <div class=\"card__view\">\n        <img src=\"./img/img_load.svg\" class=\"card__img\" />\n\n        <div class=\"card__icons\">\n            <div class=\"card__icons-inner\">\n                \n            </div>\n        </div>\n    <div class=\"card__age\">{release_year}</div>\n    </div>\n\n    <div class=\"card__title\">{title}</div>\n    </div>");
+        // Шаблон карточки выхода эпизода, выкинем футер из card_episode, год и название на карточку
+        Lampa.Template.add('card_episode', "<div class=\"card-episode selector layer--visible layer--render\">\n    <div class=\"card-episode__body\">\n        <div class=\"full-episode\">\n            <div class=\"full-episode__img\">\n                <img />\n            </div>\n\n            <div class=\"full-episode__body\">\n     <div class=\"card__title\">{title}</div>\n            <div class=\"card__age\">{release_year}</div>\n            <div class=\"full-episode__num hide\">{num}</div>\n                <div class=\"full-episode__name\">{name}</div>\n                <div class=\"full-episode__date\">{date}</div>\n            </div>\n        </div>\n    </div>\n    <div class=\"card-episode__footer hide\">\n        <div class=\"card__imgbox\">\n            <div class=\"card__view\">\n                <img class=\"card__img\" />\n            </div>\n        </div>\n\n        <div class=\"card__left\">\n            <div class=\"card__title\">{title}</div>\n            <div class=\"card__age\">{release_year}</div>\n        </div>\n    </div>\n</div>");
+        // Стили (нейтральные, без цветовых тем; скрытие иконки TV)
+        var forall_style = "\n<style id=\"ui_enhancer_forall\">\n " +
+            // По центру в мобилке
+            "@media screen and (max-width: 480px) { .full-start-new__head, .full-start-new__title, .full-start__title-original, .full-start__rate, .full-start-new__reactions, .full-start-new__rate-line, .full-start-new__buttons, .full-start-new__details, .full-start-new__tagline { -webkit-justify-content: center; justify-content: center; text-align: center; }\n" +
+            ".full-start__title-original {\n   max-width: 100%;\n}\n}" +
+            "@media screen and (max-width: 480px) { .full-start-new__right { background: -webkit-gradient(linear, left top, left bottom, from(rgba(0, 0, 0, 0)), to(rgba(0, 0, 0, 0))); background: -webkit-linear-gradient(top, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%); background: -o-linear-gradient(top, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%); background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);}}" +
+            // Круглые чек-боксы
+            ".selectbox-item__checkbox\n {border-radius: 100%\n}\n" +
+            ".selectbox-item--checked .selectbox-item__checkbox\n {background: #ccc;\n}\n" +
+            // Рейтинги внутри карточки
+            ".full-start-new__rate-line .full-start__pg {\n    font-size: 1em;\nbackground: #fff;\n    color: #000;\n}\n." +
+            ".full-start__rate \n{\n     border-radius: 0.25em;\n padding: 0.3em;\n background-color: rgba(0, 0, 0, 0.3);\n}\n" +
 
+            // Докручиваем плашки на карточках стилями 
+              // Заголовок
+            ".card__title {\n                    height: 3.6em;\n                    text-overflow: ellipsis;\n                     -o-text-overflow: ellipsis;\n                    text-overflow: ellipsis;\n                    -webkit-line-clamp: 3;\n                    line-clamp: 3;\n                } \n " +
+              // Год
+            ".card__age {\n  position: absolute;\n  right: 0em;\n  bottom: 0em;\n  z-index: 10;\n  background: rgba(0, 0, 0, 0.6);\n  color: #ffffff;\n  font-weight: 700;\n  padding: 0.4em 0.6em;\n    -webkit-border-radius: 0.48em 0 0.48em 0;\n     -moz-border-radius: 0.48em 0 0.48em 0;\n          border-radius: 0.48em 0 0.48em 0;\nline-height: 1.0;\nfont-size: 1.0em;\n}\n " +
+              // Рейтинг
+            ".card__vote {\n  position: absolute;\n  bottom: auto; \n right: 0em;\n  top: 0em;\n  background: rgba(0, 0, 0, 0.6);\n    font-weight: 700;\n  color: #fff;\n -webkit-border-radius: 0 0.34em 0 0.34em;\n     -moz-border-radius: 0 0.34em 0 0.34em;\n          border-radius: 0 0.34em 0 0.34em;\nline-height: 1.0;\nfont-size: 1.4em;\n}\n  " +
+              // Иконки закладок и т.д.
+            ".card__icons {\n  position: absolute;\n  top: 2em;\n  left: 0;\n  right: auto;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -moz-box;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n     -moz-box-pack: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n background: rgba(0, 0, 0, 0.6);\n  color: #fff;\n    -webkit-border-radius: 0 0.5em 0.5em 0;\n     -moz-border-radius: 0 0.5em 0.5em 0;\n          border-radius: 0 0.5em 0.5em 0;\n}\n" +
+            ".card__icons-inner {\n  background: rgba(0, 0, 0, 0); \n}\n" +
+              // Статус расширенных закладок
+            ".card__marker {\n position: absolute;\n  left: 0em;\n  top: 4em;\n  bottom: auto; \n  background: rgba(0, 0, 0, 0.6);\n  -webkit-border-radius: 0 0.5em 0.5em 0;\n     -moz-border-radius: 0 0.5em 0.5em 0;\n          border-radius: 0 0.5em 0.5em 0;\n  font-weight: 700;\n font-size: 1.0em;\n   padding: 0.4em 0.6em;\n    display: -webkit-box;\n  display: -webkit-flex;\n  display: -moz-box;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n     -moz-box-align: center;\n      -ms-flex-align: center;\n          align-items: center;\n  line-height: 1.2;\nmax-width: min(12em, 95%);\nbox-sizing: border-box;\n}\n" +
+              // На маленьких экранах обрезаем, на больших полностью
+            ".card__marker > span {\n max-width: min(12em, 95%);\n}\n" +
+            // Уменьшаем расстояние между рядами только для карточках в списках
+            ".items-line.items-line--type-cards + .items-line.items-line--type-cards  {\nmargin-top: 1em;\n}\n" +
+            // Так же широкие карты фиксим, чтобы не было отскока нижнего ряда, делаем отступ снизу
+            ".card--small .card__view {\nmargin-bottom: 2em;\n}\n" +
+            // Уменьшаем высоту после удаления футера, нужно для card_episode
+            ".items-line--type-cards {\n min-height: 18em;\n}\n" +
+            // Внутри карточки информация стремится к нижней границе экрана
+            "@media screen and (min-width: 580px) {\n.full-start-new {\nmin-height: 80vh;\ndisplay: flex\n}\n}\n" +
+            // Постер в карточке, менее затемнен чем в стоке
+            ".full-start__background.loaded {\nopacity: 0.8;\n}\n.full-start__background.dim {\nopacity: 0.2;\n}\n" +
+            // Скругления у большого числа элементов
+            ".explorer__files .torrent-filter .simple-button {\nfont-size: 1.2em;\n-webkit-border-radius: 0.5em;\n-moz-border-radius: 0.5em;\nborder-radius: 0.5em;\n}\n" +
+            ".full-review-add,\n.full-review,\n.extensions__item,\n.extensions__block-add,\n.search-source,\n.bookmarks-folder__layer,\n.bookmarks-folder__body,\n.card__img,\n.card__promo,\n.full-episode--next .full-episode__img:after,\n.full-episode__img img,\n.full-episode__body,\n.full-person__photo,\n.card-more__box,\n.full-start__button,\n.simple-button,\n.register {\nborder-radius: 0.5em;\n}\n" +
+            ".extensions__item.focus::after,\n.extensions__block-add.focus::after,\n.full-episode.focus::after,\n.full-review-add.focus::after,\n.card-parser.focus::after,\n.card-episode.focus .full-episode::after,\n.card-episode.hover .full-episode::after,\n.card.focus .card__view::after,\n.card.hover .card__view::after,\n.card-more.focus .card-more__box::after,\n.register.focus::after {\nborder-radius: 1em;\n}\n" +
+            ".search-source.focus,\n.simple-button.focus,\n.menu__item.focus,\n.menu__item.traverse,\n.menu__item.hover,\n.full-start__button.focus,\n.full-descr__tag.focus,\n.player-panel .button.focus,\n.full-person.selector.focus,\n.tag-count.selector.focus {\nborder-radius: 0.5em;\n}\n" +
+            // Меню слева
+            ".menu__item.focus {border-radius: 0 0.5em 0.5em 0;\n}\n" +
+            ".menu__list {\npadding-left: 0em;\n}\n" +
+            // Оставим иконки белыми в левом Меню
+            ".menu__item.focus .menu__ico {\n   -webkit-filter: invert(1);\n    filter: invert(1); \n } \n " +
+            // Скрытие иконки TV (всегда)
+            ".card__type { display: none; }\n.card--tv .card__type { display: none; }\n.card__type::after { display: none; }\n" +
+            "</style>\n";
+        Lampa.Template.add('forall_style_css', forall_style);
+        $('body').append(Lampa.Template.get('forall_style_css', {}, true));
+    }
+    
+    function incardtemplate() {
+        var incardtemplate = localStorage.getItem('ui_enhancer_incardtemplate')  === 'true';
+        if (incardtemplate) {
+            // Шаблон карточки Фильма/Сериала, переносим кнопки из кнопки "Смотреть" на верхний уровень etc.
+            Lampa.Template.add('full_start_new', "<div class=\"full-start-new\">\n\n<div class=\"full-start-new__body\">\n<div class=\"full-start-new__left\">\n<div class=\"full-start-new__poster\">\n<img class=\"full-start-new__img full--poster\" />\n</div>\n</div>\n\n<div class=\"full-start-new__right\">\n<div class=\"full-start-new__head\"></div>\n<div class=\"full-start-new__title\">{title}</div>\n<div class=\"full-start__title-original\">{original_title}</div>\n<div class=\"full-start-new__tagline full--tagline\">{tagline}</div>\n<div class=\"full-start-new__rate-line\">\n<div class=\"full-start__rate rate--tmdb\"><div>{rating}</div><div class=\"source--name\">TMDB</div></div>\n<div class=\"full-start__rate rate--imdb hide\"><div></div><div class=\"source--name\">IMDb</div></div>\n<div class=\"full-start__rate rate--kp hide\"><div></div><div class=\"source--name\">Кинопоиск</div></div>\n\n<div class=\"full-start__pg hide\"></div>\n<div class=\"full-start__status hide\"></div>\n</div>\n<div class=\"full-start-new__details\"></div>\n<div class=\"full-start-new__reactions\">\n<div>#{reactions_none}</div>\n</div>\n\n<div class=\"full-start-new__buttons\">\n<div class=\"full-start__button selector button--play\">\n<svg width=\"28\" height=\"29\" viewBox=\"0 0 28 29\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<circle cx=\"14\" cy=\"14.5\" r=\"13\" stroke=\"currentColor\" stroke-width=\"2.7\"/>\n<path d=\"M18.0739 13.634C18.7406 14.0189 18.7406 14.9811 18.0739 15.366L11.751 19.0166C11.0843 19.4015 10.251 18.9204 10.251 18.1506L10.251 10.8494C10.251 10.0796 11.0843 9.5985 11.751 9.9834L18.0739 13.634Z\" fill=\"currentColor\"/>\n</svg>\n\n<span>#{title_watch}</span>\n</div>\n\n<div class=\"full-start__button view--torrent\">\n<svg xmlns=\"http://www.w3.org/2000/svg\"  viewBox=\"0 0 50 50\" width=\"50px\" height=\"50px\">\n<path d=\"M25,2C12.317,2,2,12.317,2,25s10.317,23,23,23s23-10.317,23-23S37.683,2,25,2z M40.5,30.963c-3.1,0-4.9-2.4-4.9-2.4 S34.1,35,27,35c-1.4,0-3.6-0.837-3.6-0.837l4.17,9.643C26.727,43.92,25.874,44,25,44c-2.157,0-4.222-0.377-6.155-1.039L9.237,16.851 c0,0-0.7-1.2,0.4-1.5c1.1-0.3,5.4-1.2,5.4-1.2s1.475-0.494,1.8,0.5c0.5,1.3,4.063,11.112,4.063,11.112S22.6,29,27.4,29 c4.7,0,5.9-3.437,5.7-3.937c-1.2-3-4.993-11.862-4.993-11.862s-0.6-1.1,0.8-1.4c1.4-0.3,3.8-0.7,3.8-0.7s1.105-0.163,1.6,0.8 c0.738,1.437,5.193,11.262,5.193,11.262s1.1,2.9,3.3,2.9c0.464,0,0.834-0.046,1.152-0.104c-0.082,1.635-0.348,3.221-0.817,4.722 C42.541,30.867,41.756,30.963,40.5,30.963z\" fill=\"currentColor\"/>\n</svg>\n\n<span>#{full_torrents}</span>\n</div>\n\n<div class=\"full-start__button selector view--trailer\">\n<svg height=\"70\" viewBox=\"0 0 80 70\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M71.2555 2.08955C74.6975 3.2397 77.4083 6.62804 78.3283 10.9306C80 18.7291 80 35 80 35C80 35 80 51.2709 78.3283 59.0694C77.4083 63.372 74.6975 66.7603 71.2555 67.9104C65.0167 70 40 70 40 70C40 70 14.9833 70 8.74453 67.9104C5.3025 66.7603 2.59172 63.372 1.67172 59.0694C0 51.2709 0 35 0 35C0 35 0 18.7291 1.67172 10.9306C2.59172 6.62804 5.3025 3.2395 8.74453 2.08955C14.9833 0 40 0 40 0C40 0 65.0167 0 71.2555 2.08955ZM55.5909 35.0004L29.9773 49.5714V20.4286L55.5909 35.0004Z\" fill=\"currentColor\"></path>\n</svg>\n\n<span>#{full_trailers}</span>\n</div>\n<div class=\"full-start__button selector button--book\">\n<svg width=\"21\" height=\"32\" viewBox=\"0 0 21 32\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<path d=\"M2 1.5H19C19.2761 1.5 19.5 1.72386 19.5 2V27.9618C19.5 28.3756 19.0261 28.6103 18.697 28.3595L12.6212 23.7303C11.3682 22.7757 9.63183 22.7757 8.37885 23.7303L2.30302 28.3595C1.9739 28.6103 1.5 28.3756 1.5 27.9618V2C1.5 1.72386 1.72386 1.5 2 1.5Z\" stroke=\"currentColor\" stroke-width=\"2.5\"/>\n</svg>\n\n<span>#{settings_input_links}</span>\n</div>\n\n<div class=\"full-start__button selector button--reaction\">\n<svg width=\"38\" height=\"34\" viewBox=\"0 0 38 34\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<path d=\"M37.208 10.9742C37.1364 10.8013 37.0314 10.6441 36.899 10.5117C36.7666 10.3794 36.6095 10.2744 36.4365 10.2028L12.0658 0.108375C11.7166 -0.0361828 11.3242 -0.0361227 10.9749 0.108542C10.6257 0.253206 10.3482 0.530634 10.2034 0.879836L0.108666 25.2507C0.0369593 25.4236 3.37953e-05 25.609 2.3187e-08 25.7962C-3.37489e-05 25.9834 0.0368249 26.1688 0.108469 26.3418C0.180114 26.5147 0.28514 26.6719 0.417545 26.8042C0.54995 26.9366 0.707139 27.0416 0.880127 27.1131L17.2452 33.8917C17.5945 34.0361 17.9869 34.0361 18.3362 33.8917L29.6574 29.2017C29.8304 29.1301 29.9875 29.0251 30.1199 28.8928C30.2523 28.7604 30.3573 28.6032 30.4289 28.4303L37.2078 12.065C37.2795 11.8921 37.3164 11.7068 37.3164 11.5196C37.3165 11.3325 37.2796 11.1471 37.208 10.9742ZM20.425 29.9407L21.8784 26.4316L25.3873 27.885L20.425 29.9407ZM28.3407 26.0222L21.6524 23.252C21.3031 23.1075 20.9107 23.1076 20.5615 23.2523C20.2123 23.3969 19.9348 23.6743 19.79 24.0235L17.0194 30.7123L3.28783 25.0247L12.2918 3.28773L34.0286 12.2912L28.3407 26.0222Z\" fill=\"currentColor\"/>\n<path d=\"M25.3493 16.976L24.258 14.3423L16.959 17.3666L15.7196 14.375L13.0859 15.4659L15.4161 21.0916L25.3493 16.976Z\" fill=\"currentColor\"/>\n</svg>                \n\n<span>#{title_reactions}</span>\n</div>\n\n<div class=\"full-start__button selector button--subscribe hide\">\n<svg width=\"25\" height=\"30\" viewBox=\"0 0 25 30\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<path d=\"M6.01892 24C6.27423 27.3562 9.07836 30 12.5 30C15.9216 30 18.7257 27.3562 18.981 24H15.9645C15.7219 25.6961 14.2632 27 12.5 27C10.7367 27 9.27804 25.6961 9.03542 24H6.01892Z\" fill=\"currentColor\"/>\n<path d=\"M3.81972 14.5957V10.2679C3.81972 5.41336 7.7181 1.5 12.5 1.5C17.2819 1.5 21.1803 5.41336 21.1803 10.2679V14.5957C21.1803 15.8462 21.5399 17.0709 22.2168 18.1213L23.0727 19.4494C24.2077 21.2106 22.9392 23.5 20.9098 23.5H4.09021C2.06084 23.5 0.792282 21.2106 1.9273 19.4494L2.78317 18.1213C3.46012 17.0709 3.81972 15.8462 3.81972 14.5957Z\" stroke=\"currentColor\" stroke-width=\"2.5\"/>\n</svg>\n\n<span>#{title_subscribe}</span>\n</div>\n\n<div class=\"full-start__button selector button--options\">\n<svg width=\"38\" height=\"10\" viewBox=\"0 0 38 10\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<circle cx=\"4.88968\" cy=\"4.98563\" r=\"4.75394\" fill=\"currentColor\"/>\n<circle cx=\"18.9746\" cy=\"4.98563\" r=\"4.75394\" fill=\"currentColor\"/>\n<circle cx=\"33.0596\" cy=\"4.98563\" r=\"4.75394\" fill=\"currentColor\"/>\n</svg>\n</div>\n\n</div>\n</div>\n</div>\n</div>");
+        }
+    }
+    
+    function animations() {
+        var animations = localStorage.getItem('ui_enhancer_animations') === 'true';
+        $('#ui_enhancer_animations').remove();
+        if (animations) {
+            var animations_style = "\n<style id=\"ui_enhancer_animations\">\n " +
+                // Пробуем немного анимаций
+                ".card\n{transform: scale(1);\ntransition: transform 0.3s ease;\n}\n" +
+                ".card.focus\n{transform: scale(1.03);\n}\n" +
+                ".torrent-item,\n.online-prestige\n{transform: scale(1);\ntransition: transform 0.3s ease;\n}\n" +
+                ".torrent-item.focus,\n.online-prestige.focus\n{transform: scale(1.01);\n}\n" +
+                ".extensions__item,\n.extensions__block-add,\n.full-review-add,\n.full-review,\n.tag-count,\n.full-person,\n.full-episode,\n.simple-button,\n.full-start__button,\n.items-cards .selector,\n.card-more,\n.explorer-card__head-img.selector,\n.card-episode\n{transform: scale(1);\ntransition: transform 0.3s ease;\n}\n" +
+                ".extensions__item.focus,\n.extensions__block-add.focus,\n.full-review-add.focus,\n.full-review.focus,\n.tag-count.focus,\n.full-person.focus,\n.full-episode.focus,\n.simple-button.focus,\n.full-start__button.focus,\n.items-cards .selector.focus,\n.card-more.focus,\n.explorer-card__head-img.selector.focus,\n.card-episode.focus\n{transform: scale(1.03);\n}\n" +
+                ".menu__item {\n  transition: transform 0.3s ease;\n}\n" +
+                ".menu__item.focus {\n transform: translateX(-0.2em);\n}\n" +
+                ".selectbox-item,\n.settings-folder,\n.settings-param {\n transition: transform 0.3s ease;\n}\n" +
+                ".selectbox-item.focus,\n.settings-folder.focus,\n.settings-param.focus {\n transform: translateX(0.2em);\n}\n" +
+            "</style>\n";
+            $('body').append(animations_style);
+        }
+    }
+    
+    function bigbuttons() {
+        var bigbuttons = localStorage.getItem('ui_enhancer_bigbuttons')  === 'true';
+        $('#ui_enhancer_bigbuttons').remove();
+        if (bigbuttons) {
+            var bigbuttons_style = "\n<style id=\"ui_enhancer_bigbuttons\">\n " +
+                ".full-start-new__buttons .full-start__button:not(.focus) span {display: inline ;\n}\n@media screen and (max-width: 580px) {\n.full-start-new__buttons {\noverflow: auto;\n}\n.full-start-new__buttons .full-start__button:not(.focus) span {display: none;\n}\n}\n" +
+            "</style>\n";
+            $('body').append(bigbuttons_style);
+        }
+    }    
+    
     // Функция инициализации плагина
     function startPlugin() {
-        // Значения по умолчанию (убрал translate_tv)
-        if (Lampa.Storage.get('ui_customizer_animations') === undefined) {
-            Lampa.Storage.set('ui_customizer_animations', 'true');
+        // Значения по умолчанию
+        if (!localStorage.getItem('ui_enhancer_animations')) {
+            localStorage.setItem('ui_enhancer_animations', 'true');
         }
-        if (Lampa.Storage.get('ui_customizer_incardtemplate') === undefined) {
-            Lampa.Storage.set('ui_customizer_incardtemplate', 'false');
+        if (!localStorage.getItem('ui_enhancer_incardtemplate')) {
+            localStorage.setItem('ui_enhancer_incardtemplate', 'false');
+        }   
+        if (!localStorage.getItem('ui_enhancer_bigbuttons')) {
+            localStorage.setItem('ui_enhancer_bigbuttons', 'false');
         }
-        if (Lampa.Storage.get('ui_customizer_bigbuttons') === undefined) {
-            Lampa.Storage.set('ui_customizer_bigbuttons', 'true');  // По умолчанию включено
-        }
-
-        // Простой SVG для иконки (шестерёнка, как ранее)
-        var icon_svg = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5zm0-7c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-4c-4.41 0-8 3.59-8 8s3.59 8 8 8 8-3.59 8-8-3.59-8-8-8zm0 14c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z" fill="currentColor"/></svg>';
-
+        // Меню        
         Lampa.SettingsApi.addComponent({
-            component: "ui_customizer",
-            name: Lampa.Lang.translate('ui_customizer'),
-            icon: icon_svg
+            component: "ui_enhancer",
+            name: Lampa.Lang.translate('ui_enhancer'),
+            icon: ''
         });
-
+        
         Lampa.SettingsApi.addParam({
-            component: 'ui_customizer',
+            component: 'ui_enhancer',
             param: {
-                name: 'ui_customizer_incardtemplate',
+                name: 'ui_enhancer_animations',
                 type: "trigger",
-                "default": false
+                default: true
             },
             field: {
-                name: Lampa.Lang.translate('ui_customizer_incardtemplate'),
-                description: 'Переносит год выше названия в карточках (требует перезагрузки). Рейтинг остаётся как в оригинале.'
-            },
-            onChange: function(value) {
-                if (value) window.location.reload();
-            }
-        });
-
-        Lampa.SettingsApi.addParam({
-            component: 'ui_customizer',
-            param: {
-                name: 'ui_customizer_animations',
-                type: "trigger",
-                "default": true
-            },
-            field: {
-                name: Lampa.Lang.translate('ui_customizer_animations'),
-                description: 'Добавляет лёгкие анимации масштабирования при фокусе.'
+                name: Lampa.Lang.translate('ui_enhancer_animations'),
+                description: ''
             },
             onChange: function(value) {
                 animations();
             }
         });
-
+        
         Lampa.SettingsApi.addParam({
-            component: 'ui_customizer',
+            component: 'ui_enhancer',
             param: {
-                name: 'ui_customizer_bigbuttons',
+                name: 'ui_enhancer_incardtemplate',
                 type: "trigger",
-                "default": true
+                default: false
             },
             field: {
-                name: Lampa.Lang.translate('ui_customizer_bigbuttons'),
-                description: 'Увеличивает кнопки (play, torrent) в полном экране, текст скрывается на мобильных.'
+                name: Lampa.Lang.translate('ui_enhancer_incardtemplate'),
+                description: ''
+            },
+            onChange: function(value) {
+                window.location.reload();
+            }
+        });
+        
+        Lampa.SettingsApi.addParam({
+            component: 'ui_enhancer',
+            param: {
+                name: 'ui_enhancer_bigbuttons',
+                type: "trigger",
+                default: false
+            },
+            field: {
+                name: Lampa.Lang.translate('ui_enhancer_bigbuttons'),
+                description: ''
             },
             onChange: function(value) {
                 bigbuttons();
             }
         });
-
-        // Применяем
-        applyCustomizations();
+        
+        // Применяем улучшения
+        applyEnhancements();
     }
 
-    // Ждем загрузки приложения
+    // Ждем загрузки приложения и запускаем плагин
     if (window.appready) {
         startPlugin();
     } else {
@@ -735,14 +281,13 @@
             }
         });
     }
-
-    // Регистрация плагина
+    // Регистрация плагина в манифесте
     Lampa.Manifest.plugins = {
-        name: 'ui_customizer',
-        version: '1.0.5',
-        description: 'UI Customizer for Lampac (Simplified, TV label fixed)'
+        name: 'ui_enhancer',
+        version: '1.0.0',
+        description: 'UI Enhancements for Cards'
     };
 
-    // Экспорт
-    window.ui_customizer = ui_customizer;
+    // Экспортируем объект плагина для внешнего доступа
+    window.ui_enhancer = ui_enhancer;
 })();
