@@ -74,7 +74,7 @@
         // Название плагина
         name: 'card_custom',
         // Версия плагина
-        version: '2.6.1',
+        version: '2.6.2',
         // Настройки по умолчанию
         settings: {}
     };
@@ -167,8 +167,8 @@
     
     // Дополнительные Шаблоны    
     function forall() {
-        // Шаблон карточки, где год перенесен выше названия
-        Lampa.Template.add('card', "<div class=\"card selector layer--visible layer--render\">\n    <div class=\"card__view\">\n        <img src=\"./img/img_load.svg\" class=\"card__img\" />\n\n        <div class=\"card__icons\">\n            <div class=\"card__icons-inner\">\n                \n            </div>\n        </div>\n    <div class=\"card__age\">{release_year}</div>\n    </div>\n\n    <div class=\"card__title\">{title}</div>\n    </div>");
+        // Шаблон карточки, где год перенесен выше названия. Добавляем .card__type с {tvcaption} для TV
+        Lampa.Template.add('card', "<div class=\"card selector layer--visible layer--render\">\n    <div class=\"card__view\">\n        <img src=\"./img/img_load.svg\" class=\"card__img\" />\n\n        <div class=\"card__icons\">\n            <div class=\"card__icons-inner\">\n                \n            </div>\n        </div>\n        <div class=\"card__type\">{tvcaption}</div>  <!-- Кастомная мітка для TV -->\n    <div class=\"card__age\">{release_year}</div>\n    </div>\n\n    <div class=\"card__title\">{title}</div>\n    </div>");
         // Шаблон карточки выхода эпизода, выкинем футер из card_episode, год и название на карточку
         Lampa.Template.add('card_episode', "<div class=\"card-episode selector layer--visible layer--render\">\n    <div class=\"card-episode__body\">\n        <div class=\"full-episode\">\n            <div class=\"full-episode__img\">\n                <img />\n            </div>\n\n            <div class=\"full-episode__body\">\n     <div class=\"card__title\">{title}</div>\n            <div class=\"card__age\">{release_year}</div>\n            <div class=\"full-episode__num hide\">{num}</div>\n                <div class=\"full-episode__name\">{name}</div>\n                <div class=\"full-episode__date\">{date}</div>\n            </div>\n        </div>\n    </div>\n    <div class=\"card-episode__footer hide\">\n        <div class=\"card__imgbox\">\n            <div class=\"card__view\">\n                <img class=\"card__img\" />\n            </div>\n        </div>\n\n        <div class=\"card__left\">\n            <div class=\"card__title\">{title}</div>\n            <div class=\"card__age\">{release_year}</div>\n        </div>\n    </div>\n</div>");
         // Стили 
@@ -218,6 +218,8 @@
             ".menu__list {padding-left: 0em;\n}\n" +
             // Оставим иконки белыми в левом Меню
             ".menu__item.focus .menu__ico { -webkit-filter: invert(1);\n    filter: invert(1); \n } \n " +
+            // Стили для кастомной мітки TV (только для .card--tv)
+            ".card--tv .card__type { position: absolute;\n  left: 0.5em;\n  top: 0.5em;\n  z-index: 12;\n  background: rgba(0, 0, 0, 0.8);\n  color: #fff;\n  font-weight: bold;\n  font-size: 0.85em;\n  padding: 0.3em 0.5em;\n  border-radius: 0.3em;\n  line-height: 1.1;\n  display: none;  /* По умолчанию скрыто, показывается через JS */\n}\n.card--tv .card__type.show { display: block; }\n" +
             "</style>\n";
         Lampa.Template.add('forall_style_css', forall_style);
         $('body').append(Lampa.Template.get('forall_style_css', {}, true));
@@ -234,21 +236,30 @@
 function translate_tv() {
     var tv_caption = Lampa.Lang.translate('card_custom_tvcaption');
     var translate_tv = localStorage.getItem('card_custom_translate_tv')  === 'true';
-    var translate_tv_style;
     $('#card_custom_translate_tv').remove(); 
-    if (!translate_tv) {
-        translate_tv_style = "\n<style id=\"card_custom_translate_tv\">\n " +
-            ".card__type  {\n  display: none;\n}\n " +
-            ".card--tv .card__type {\n  display: none;\n}\n" +
-        "</style>\n";
-        $('body').append(translate_tv_style);
+    
+    // Стили для базового приховування стандартної мітки
+    var translate_tv_style = "\n<style id=\"card_custom_translate_tv\">\n " +
+        ".card__type { display: none; }  /* Приховуємо стандартну мітку для всіх */\n" +
+        ".card--tv .card__type::after { display: none; }  /* Приховуємо псевдоелемент */\n";
+    
+    if (translate_tv) {
+        // Коли увімкнено: показуємо кастомну мітку з перекладом для TV-карток
+        translate_tv_style += ".card--tv .card__type.show { display: block !important; }\n";
+        // Застосовуємо текст динамічно (для вже завантажених карток)
+        setTimeout(function() {
+            $('.card--tv .card__type').text(tv_caption).addClass('show');
+            // Для нових карток — через MutationObserver або після рендерингу (Lampac обробляє динамічно)
+        }, 100);
     } else {
-        translate_tv_style = "\n<style id=\"card_custom_translate_tv\">\n " +
-            ".card--tv .card__type,\n.card__type {\n  display: none;\n}\n" + 
-            ".card__type::after {\n  display: none;\n}" +
-        "</style>\n";
-        $('body').append(translate_tv_style);
+        // Коли вимкнено: повністю приховуємо все
+        translate_tv_style += ".card--tv .card__type { display: none !important; }\n";
+        setTimeout(function() {
+            $('.card--tv .card__type').removeClass('show').text('');
+        }, 100);
     }
+    
+    $('body').append(translate_tv_style);
 }
     
     function animations() {
@@ -334,6 +345,10 @@ function translate_tv() {
             },
             onChange: function(value) {
                 translate_tv();
+                // Перерендерити картки після зміни (якщо потрібно)
+                if (Lampa.Activity.active()) {
+                    Lampa.Activity.active().render();
+                }
             }
         });
         
@@ -386,7 +401,7 @@ function translate_tv() {
     // Регистрация плагина в манифесте
     Lampa.Manifest.plugins = {
         name: 'card_custom',
-        version: '2.6.1',
+        version: '2.6.2',
         description: 'Custom cards'
     };
 
