@@ -72,10 +72,11 @@
 
     var ui_customizer = {
         name: 'ui_customizer',
-        version: '1.0.1'  // Обновлена версия
+        version: '1.0.2'  // Обновлена версия
     };
 
     var onetime = false;
+    var seriesObserver = null;
 
     function applyCustomizations() {
         // Удаляем старые стили
@@ -85,7 +86,7 @@
         $('#ui_customizer_animations').remove();
         $('#ui_customizer_base').remove();
 
-        // Базовые стили для года, рейтинга и макета (всегда применяются)
+        // Базовые стили для года, рейтинга, макета и лейбла сериалов (всегда применяются)
         var base_styles = `
         <style id="ui_customizer_base">
             .card__age {
@@ -133,6 +134,19 @@
             }
             .items-line--type-cards {
                 min-height: 18em;
+            }
+            /* Стили для лейбла сериалов (статические, без динамики) */
+            .card__type {
+                position: absolute;
+                top: 0.5em;
+                left: 0.5em;
+                z-index: 5;
+                background: linear-gradient(to right, #1e6262dd, #3da18ddd);
+                color: white;
+                padding: 0.2em 0.4em;
+                border-radius: 0.25em;
+                font-size: 0.8em;
+                font-weight: bold;
             }
             @media screen and (max-width: 480px) {
                 .full-start-new__head, .full-start-new__title, .full-start__title-original, .full-start__rate, .full-start-new__reactions, .full-start-new__rate-line, .full-start-new__buttons, .full-start-new__details, .full-start-new__tagline {
@@ -184,6 +198,7 @@
             onetime = true;
             applyCardTemplates();
             removeIncompatibleSettings();
+            setupSeriesObserver();  // Инициализируем observer для лейблов
         }
 
         applySeriesLabel();
@@ -194,7 +209,7 @@
     function applyCardTemplates() {
         var custom_layout = localStorage.getItem('ui_customizer_card_layout') === 'true';
         if (custom_layout) {
-            // Шаблон карточки с годом выше
+            // Шаблон карточки с годом выше (без лейбла, он добавляется observer'ом)
             Lampa.Template.add('card', `<div class="card selector layer--visible layer--render">
                 <div class="card__view">
                     <img src="./img/img_load.svg" class="card__img" />
@@ -202,11 +217,12 @@
                         <div class="card__icons-inner"></div>
                     </div>
                     <div class="card__age">{release_year}</div>
+                    <div class="card__type"></div>  <!-- Placeholder для лейбла -->
                 </div>
                 <div class="card__title">{title}</div>
             </div>`);
 
-            // Шаблон эпизода
+            // Шаблон эпизода (аналогично)
             Lampa.Template.add('card_episode', `<div class="card-episode selector layer--visible layer--render">
                 <div class="card-episode__body">
                     <div class="full-episode">
@@ -237,27 +253,62 @@
         }
     }
 
-    function applySeriesLabel() {
+    function setupSeriesObserver() {
         var show_series = localStorage.getItem('ui_customizer_series_label') === 'true';
         var series_caption = Lampa.Lang.translate('ui_customizer_series_caption') || 'SERIES';
 
-        $('#ui_customizer_series').remove();
-
-        var style = $('<style id="ui_customizer_series"></style>');
-        $('body').append(style);
-        var sheet = style[0].sheet;
-
-        if (show_series) {
-            // Скрываем оригинальный .card__type и добавляем кастом ::after с меткой
-            sheet.insertRule('.card__type { display: none; }', sheet.cssRules.length);
-            var escaped_caption = series_caption.replace(/"/g, '\\"');
-            var rule = `.card--tv .card__type::after { content: "${escaped_caption}"; display: block; background: linear-gradient(to right, #1e6262dd, #3da18ddd); color: white; padding: 0.2em 0.4em; border-radius: 0.25em; font-size: 0.8em; font-weight: bold; position: absolute; top: 0.5em; left: 0.5em; z-index: 5; }`;
-            sheet.insertRule(rule, sheet.cssRules.length);
-        } else {
-            // Полностью скрываем
-            sheet.insertRule('.card__type, .card--tv .card__type { display: none !important; }', sheet.cssRules.length);
-            sheet.insertRule('.card--tv .card__type::after { display: none !important; }', sheet.cssRules.length);
+        // Удаляем старый observer
+        if (seriesObserver) {
+            seriesObserver.disconnect();
         }
+
+        // Создаём новый MutationObserver для наблюдения за карточками
+        seriesObserver = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'childList') {
+                    mutation.addedNodes.forEach(function(node) {
+                        if (node.nodeType === 1) {  // Element
+                            if (node.classList && node.classList.contains('card') || node.querySelector('.card')) {
+                                updateSeriesLabels(node);
+                            }
+                        }
+                    });
+                }
+            });
+        });
+
+        // Наблюдаем за body
+        seriesObserver.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+
+        // Применяем к существующим карточкам
+        updateSeriesLabels(document.body, show_series, series_caption);
+    }
+
+    function updateSeriesLabels(container, show_series, series_caption) {
+        if (show_series === undefined) {
+            show_series = localStorage.getItem('ui_customizer_series_label') === 'true';
+        }
+        if (series_caption === undefined) {
+            series_caption = Lampa.Lang.translate('ui_customizer_series_caption') || 'SERIES';
+        }
+
+        var cards = container.querySelectorAll ? container.querySelectorAll('.card--tv .card__type') : [];
+        cards.forEach(function(typeEl) {
+            if (show_series) {
+                typeEl.textContent = series_caption;
+                typeEl.style.display = 'block';
+            } else {
+                typeEl.style.display = 'none';
+            }
+        });
+    }
+
+    function applySeriesLabel() {
+        // Обновляем observer с новыми настройками
+        setupSeriesObserver();
     }
 
     function applyBigButtons() {
@@ -388,7 +439,7 @@
             },
             field: {
                 name: Lampa.Lang.translate('ui_customizer_series_label'),
-                description: 'Заменяет лейбл "TV" на "СЕРИАЛ" (или эквивалент). Выкл — скрывает лейбл полностью.'
+                description: 'Заменяет лейбл "TV" на "СЕРИАЛ" (или эквивалент) в карточках. Выкл — скрывает лейбл полностью.'
             },
             onChange: function(value) {
                 applySeriesLabel();
@@ -442,8 +493,8 @@
 
     Lampa.Manifest.plugins = {
         name: 'ui_customizer',
-        version: '1.0.1',
-        description: 'UI Customizer for Lampac'
+        version: '1.0.2',
+        description: 'UI Customizer for Lampac (DOM-based series label)'
     };
 
     window.ui_customizer = ui_customizer;
