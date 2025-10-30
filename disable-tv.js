@@ -1,32 +1,21 @@
 (function() {
     'use strict';
     
-    // Функция для скрытия TV иконок
-    function hideTVIcons() {
-        // Находим все элементы с классом card_type
-        const tvIcons = document.querySelectorAll('.card_type');
-        
-        // Скрываем каждый найденный элемент
-        tvIcons.forEach(icon => {
-            icon.style.display = 'none';
-        });
-    }
-    
-    // Запускаем при загрузке страницы
-    hideTVIcons();
-    
-    // Наблюдаем за изменениями DOM для динамически загружаемых карточек
-    const observer = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
-            if (mutation.addedNodes.length) {
-                hideTVIcons();
-            }
-        });
+    // Підключаємося до рендеру карток Lampa
+    Lampa.Listener.follow('full', function(e) {
+        if (e.type === 'complite') {
+            setTimeout(function() {
+                // Знаходимо всі TV іконки після повного завантаження
+                document.querySelectorAll('.card_type').forEach(function(el) {
+                    el.remove(); // Видаляємо елемент повністю
+                });
+            }, 100);
+        }
     });
     
-    // Настройка наблюдателя
-    observer.observe(document.body, {
-        childList: true,
-        subtree: true
-    });
+    // Додатково через CSS для швидкості
+    var style = document.createElement('style');
+    style.innerHTML = '.card_type { display: none !important; visibility: hidden !important; }';
+    document.head.appendChild(style);
+    
 })();
