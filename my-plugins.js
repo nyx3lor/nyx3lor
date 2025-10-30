@@ -1,4 +1,4 @@
-(function() {
+function() {
     'use strict';
 
     Lampa.Lang.add({
@@ -12,28 +12,6 @@
             bg: "Оформление на интерфейса",
             he: "עיצוב ממשק",
             cs: "Návrh rozhraní"
-        },
-        maxsm_themes_translate_tv: {
-            ru: "Переводить TV",
-            en: "Translate TV",
-            uk: "Перекладати TV",
-            be: "Перакладаць TV",
-            zh: "翻译 TV",
-            pt: "Traduzir TV",
-            bg: "Превеждане на TV",
-            he: "לתרגם TV",
-            cs: "Přeložit TV"
-        },
-        maxsm_themes_tvcaption: {
-            ru: "СЕРИАЛ",       
-            en: "SERIES",   
-            uk: "СЕРІАЛ",    
-            be: "СЕРЫЯЛ",     
-            zh: "剧集",       
-            pt: "SÉRIE",     
-            bg: "СЕРИАЛ",      
-            he: "סִדְרָה",  
-            cs: "SERIÁL" 
         },
         maxsm_themes_incardtemplate: {
             ru: "Макет содержимого карточки",
@@ -65,7 +43,6 @@
         name: 'maxsm_themes',
         version: '2.6.1',
         settings: {
-            translate_tv: true,
             bigbuttons: false,
             incardtemplate: false
         }
@@ -74,7 +51,6 @@
     var onetime = false;
 
     function applySettings() {
-        translate_tv();
         bigbuttons();
 
         if (onetime === false) {
@@ -162,30 +138,6 @@
         }
     }
 
-    function translate_tv() {
-        var tv_caption = Lampa.Lang.translate('maxsm_themes_tvcaption');
-        var translate_tv = localStorage.getItem('maxsm_themes_translate_tv') === 'true';
-        var translate_tv_style;
-
-        $('#maxsm_themes_translate_tv').remove(); 
-
-        if (!translate_tv) {
-            // ВЫКЛЮЧЕНО - показываем TV метку обычно
-            translate_tv_style = "<style id='maxsm_themes_translate_tv'>" +
-                ".card__type { display: none; }" +
-                ".card--tv .card__type { display: none; }" +
-                "</style>";
-            $('body').append(translate_tv_style);
-        } else {
-            // ВКЛЮЧЕНО - убираем TV метку (скрываем ::after)
-            translate_tv_style = "<style id='maxsm_themes_translate_tv'>" +
-                ".card--tv .card__type, .card__type { display: none; }" + 
-                ".card__type::after { display: none; }" +
-                "</style>";
-            $('body').append(translate_tv_style);
-        }
-    }
-
     function bigbuttons() {
         var bigbuttons = localStorage.getItem('maxsm_themes_bigbuttons') === 'true';
         $('#maxsm_themes_bigbuttons').remove();
@@ -203,9 +155,6 @@
     }
 
     function startPlugin() {
-        if (!localStorage.getItem('maxsm_themes_translate_tv')) {
-            localStorage.setItem('maxsm_themes_translate_tv', 'true');
-        }
         if (!localStorage.getItem('maxsm_themes_incardtemplate')) {
             localStorage.setItem('maxsm_themes_incardtemplate', 'false');
         }   
@@ -217,22 +166,6 @@
             component: "maxsm_themes",
             name: Lampa.Lang.translate('maxsm_themes'),
             icon: themes_svg
-        });
-
-        Lampa.SettingsApi.addParam({
-            component: 'maxsm_themes',
-            param: {
-                name: 'maxsm_themes_translate_tv',
-                type: "trigger",
-                default: true
-            },
-            field: {
-                name: Lampa.Lang.translate('maxsm_themes_translate_tv'),
-                description: ''
-            },
-            onChange: function(value) {
-                translate_tv();
-            }
         });
 
         Lampa.SettingsApi.addParam({
