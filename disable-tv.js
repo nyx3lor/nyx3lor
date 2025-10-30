@@ -1,27 +1,35 @@
-(function () {
+(function() {
     'use strict';
     
-    function hideTVIcon() {
-        const hideCSS = `
-            .card_type {
+    function removeTV() {
+        var style = `<style id="remove-tv-marker">
+            .card__type,
+            .card--tv .card__type {
                 display: none !important;
-                visibility: hidden !important;
             }
-        `;
-
-        const styleTag = document.createElement("style");
-        styleTag.textContent = hideCSS;
-        document.head.appendChild(styleTag);
+        </style>`;
+        
+        $('head').append(style);
     }
-
+    
+    function startPlugin() {
+        removeTV();
+    }
+    
     if (window.appready) {
-        hideTVIcon();
-    }
-    else {
-        Lampa.Listener.follow('app', function (e) {
-            if (e.type == 'ready') {
-                hideTVIcon();
+        startPlugin();
+    } else {
+        Lampa.Listener.follow('app', function(event) {
+            if (event.type === 'ready') {
+                startPlugin();
             }
         });
     }
+    
+    Lampa.Manifest.plugins.push({
+        name: 'remove_tv',
+        version: '1.0',
+        description: 'Remove TV marker from posters'
+    });
+    
 })();
