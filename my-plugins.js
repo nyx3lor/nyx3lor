@@ -34,13 +34,25 @@
             bg: "Големи бутони в картата",
             he: "כפתורים גדולים בכרטיס",
             cs: "Velká tlačítka v kartě"
+        },
+        maxsm_themes_show_year_rating: {
+            ru: "Рік і рейтинг зверху справа",
+            en: "Year and rating top right",
+            uk: "Рік і рейтинг зверху справа",
+            be: "Год і рэйтынг зверху справа",
+            zh: "右上角显示年份和评分",
+            pt: "Ano e classificação no canto superior direito",
+            bg: "Година и рейтинг горе вдясно",
+            he: "שנה ודירוג למעלה מימין",
+            cs: "Rok a hodnocení vpravo nahoře"
         }
     });
 
     var maxsm_themes = {
         settings: {
             translate_tv: false,
-            big_buttons: false
+            big_buttons: false,
+            show_year_rating: false
         }
     };
 
@@ -73,38 +85,96 @@
         $('#' + styleId).remove();
 
         var css = `
+/* Большие кнопки на странице фильма/сериала */
 .full-start__buttons .button {
     font-size: 1.3em !important;
     padding: 1.2em 2.5em !important;
+    min-height: 3.5em !important;
+}
+
+/* Увеличиваем иконки в кнопках */
+.full-start__buttons .button svg {
+    width: 1.5em !important;
+    height: 1.5em !important;
+}
+
+/* Увеличиваем отступы между кнопками */
+.full-start__buttons {
+    gap: 1em !important;
 }
 `;
         $('<style id="' + styleId + '">' + css + '</style>').appendTo('head');
     }
 
-    function hideYearOnPosters() {
-        var styleId = 'maxsm_themes_hide_year';
+    function showYearAndRating() {
+        if (!maxsm_themes.settings.show_year_rating) {
+            $('#maxsm_themes_year_rating').remove();
+            return;
+        }
+
+        var styleId = 'maxsm_themes_year_rating';
         $('#' + styleId).remove();
 
         var css = `
-.card__year {
-    display: none !important;
+/* Позиционируем год и рейтинг справа сверху */
+.full-start__head {
+    position: relative;
+}
+
+/* Контейнер для года и рейтинга */
+.full-start__head::after {
+    content: '';
+    position: absolute;
+    top: 1em;
+    right: 1em;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5em;
+    z-index: 10;
+}
+
+/* Год справа сверху */
+.full-start__details .full-start__title-sub {
+    position: absolute !important;
+    top: 1em !important;
+    right: 1em !important;
+    left: auto !important;
+    font-size: 1.2em !important;
+    font-weight: bold !important;
+    background: rgba(0, 0, 0, 0.7) !important;
+    padding: 0.5em 1em !important;
+    border-radius: 0.5em !important;
+    z-index: 11 !important;
+}
+
+/* Рейтинг TMDB справа сверху (под годом) */
+.full-start__rate {
+    position: absolute !important;
+    top: 4em !important;
+    right: 1em !important;
+    left: auto !important;
+    font-size: 1.5em !important;
+    background: rgba(0, 0, 0, 0.8) !important;
+    padding: 0.5em 1em !important;
+    border-radius: 0.5em !important;
+    z-index: 11 !important;
+}
+
+.full-start__rate-value {
+    font-weight: bold !important;
 }
 `;
         $('<style id="' + styleId + '">' + css + '</style>').appendTo('head');
-    }
-
-    function forall() {
-        // Постоянное скрытие года на постерах
-        hideYearOnPosters();
     }
 
     function applySettings() {
         translate_tv();
         bigbuttons();
+        showYearAndRating();
 
         if (onetime === false) {
             onetime = true;
-            forall();
         }
     }
 
@@ -113,6 +183,7 @@
             if (e.name === 'maxsm_themes') {
                 translate_tv();
                 bigbuttons();
+                showYearAndRating();
             }
         });
 
@@ -161,12 +232,33 @@
                 bigbuttons();
             }
         });
+
+        Lampa.SettingsApi.addParam({
+            component: 'maxsm_themes',
+            param: {
+                name: 'maxsm_themes_show_year_rating',
+                type: 'trigger',
+                default: false
+            },
+            field: {
+                name: Lampa.Lang.translate('maxsm_themes_show_year_rating')
+            },
+            onRender: function(item) {
+                maxsm_themes.settings.show_year_rating = Lampa.Storage.get('maxsm_themes_show_year_rating', false);
+            },
+            onChange: function(value) {
+                maxsm_themes.settings.show_year_rating = value;
+                Lampa.Storage.set('maxsm_themes_show_year_rating', value);
+                showYearAndRating();
+            }
+        });
     }
 
     function startPlugin() {
         // Загружаем сохраненные настройки
         maxsm_themes.settings.translate_tv = Lampa.Storage.get('maxsm_themes_translate_tv', false);
         maxsm_themes.settings.big_buttons = Lampa.Storage.get('maxsm_themes_big_buttons', false);
+        maxsm_themes.settings.show_year_rating = Lampa.Storage.get('maxsm_themes_show_year_rating', false);
 
         // Создаем меню настроек
         createSettingsMenu();
