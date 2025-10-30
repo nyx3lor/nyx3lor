@@ -22,17 +22,17 @@
             he: "אנימציות",
             cs: "Animace"
         },
-        card_custom_translate_tv: {
-            ru: "Переводить TV",
-            en: "Translate TV",
-            uk: "Перекладати TV",
-            be: "Перакладаць TV",
-            zh: "翻译 TV",
-            pt: "Traduzir TV",
-            bg: "Превеждане на TV",
-            he: "לתרגם TV",
-            cs: "Přeložit TV"
-        },
+        // card_custom_translate_tv: {  // Закоментовано, щоб не показувати в Lang
+        //     ru: "Переводить TV",
+        //     en: "Translate TV",
+        //     uk: "Перекладати TV",
+        //     be: "Перакладаць TV",
+        //     zh: "翻译 TV",
+        //     pt: "Traduzir TV",
+        //     bg: "Превеждане на TV",
+        //     he: "לתרגם TV",
+        //     cs: "Přeložit TV"
+        // },
         card_custom_tvcaption: {
             ru: "СЕРИАЛ",       
             en: "SERIES",   
@@ -74,7 +74,7 @@
         // Название плагина
         name: 'card_custom',
         // Версия плагина
-        version: '2.6.2',
+        version: '2.6.3',
         // Настройки по умолчанию
         settings: {}
     };
@@ -93,7 +93,7 @@
         $('head').append(style);
         
         animations();
-        translate_tv();
+        translate_tv();  // Викликаємо, але з off за замовчуванням
         bigbuttons();
 
         if (onetime === false) {
@@ -218,8 +218,8 @@
             ".menu__list {padding-left: 0em;\n}\n" +
             // Оставим иконки белыми в левом Меню
             ".menu__item.focus .menu__ico { -webkit-filter: invert(1);\n    filter: invert(1); \n } \n " +
-            // Стили для кастомной мітки TV (только для .card--tv)
-            ".card--tv .card__type { position: absolute;\n  left: 0.5em;\n  top: 0.5em;\n  z-index: 12;\n  background: rgba(0, 0, 0, 0.8);\n  color: #fff;\n  font-weight: bold;\n  font-size: 0.85em;\n  padding: 0.3em 0.5em;\n  border-radius: 0.3em;\n  line-height: 1.1;\n  display: none;  /* По умолчанию скрыто, показывается через JS */\n}\n.card--tv .card__type.show { display: block; }\n" +
+            // Стили для кастомной мітки TV (только для .card--tv) — але за замовчуванням прихована
+            ".card--tv .card__type { position: absolute;\n  left: 0.5em;\n  top: 0.5em;\n  z-index: 12;\n  background: rgba(0, 0, 0, 0.8);\n  color: #fff;\n  font-weight: bold;\n  font-size: 0.85em;\n  padding: 0.3em 0.5em;\n  border-radius: 0.3em;\n  line-height: 1.1;\n  display: none;  /* По умолчанию скрыто */\n}\n.card--tv .card__type.show { display: block; }\n" +
             "</style>\n";
         Lampa.Template.add('forall_style_css', forall_style);
         $('body').append(Lampa.Template.get('forall_style_css', {}, true));
@@ -238,11 +238,19 @@ function translate_tv() {
     var translate_tv = localStorage.getItem('card_custom_translate_tv')  === 'true';
     $('#card_custom_translate_tv').remove(); 
     
-    // Стили для базового приховування стандартної мітки
-    var translate_tv_style = "\n<style id=\"card_custom_translate_tv\">\n " +
-        ".card__type { display: none; }  /* Приховуємо стандартну мітку для всіх */\n" +
-        ".card--tv .card__type::after { display: none; }  /* Приховуємо псевдоелемент */\n";
-    
+    // За замовчуванням off (false), тому завжди приховуємо з перекладом
+    if (!translate_tv) {  // Логіка тільки для off, як зараз
+        var translate_tv_style = "\n<style id=\"card_custom_translate_tv\">\n " +
+            ".card__type { display: none; }  /* Приховуємо стандартну мітку для всіх */\n" +
+            ".card--tv .card__type::after { display: none; }  /* Приховуємо псевдоелемент */\n" +
+            ".card--tv .card__type { display: none !important; }  /* Повністю приховуємо кастомну */\n";
+        $('body').append(translate_tv_style);
+        setTimeout(function() {
+            $('.card--tv .card__type').removeClass('show').text('').hide();
+        }, 100);
+    }
+    // Блок для true закоментовано, щоб не використовувати
+    /*
     if (translate_tv) {
         // Коли увімкнено: показуємо кастомну мітку з перекладом для TV-карток
         translate_tv_style += ".card--tv .card__type.show { display: block !important; }\n";
@@ -251,15 +259,8 @@ function translate_tv() {
             $('.card--tv .card__type').text(tv_caption).addClass('show');
             // Для нових карток — через MutationObserver або після рендерингу (Lampac обробляє динамічно)
         }, 100);
-    } else {
-        // Коли вимкнено: повністю приховуємо все
-        translate_tv_style += ".card--tv .card__type { display: none !important; }\n";
-        setTimeout(function() {
-            $('.card--tv .card__type').removeClass('show').text('');
-        }, 100);
     }
-    
-    $('body').append(translate_tv_style);
+    */
 }
     
     function animations() {
@@ -296,12 +297,12 @@ function translate_tv() {
     
     // Функция инициализации плагина
     function startPlugin() {
-        // Значения по умолчанию
+        // Значения по умолчанию — translate_tv на false (off)
         if (!localStorage.getItem('card_custom_animations')) {
             localStorage.setItem('card_custom_animations', 'true');
         }
-        if (!localStorage.getItem('card_custom_translate_tv')) {
-            localStorage.setItem('card_custom_translate_tv', 'true');
+        if (localStorage.getItem('card_custom_translate_tv') !== 'false') {  // Примусово off
+            localStorage.setItem('card_custom_translate_tv', 'false');
         }
         if (!localStorage.getItem('card_custom_incardtemplate')) {
             localStorage.setItem('card_custom_incardtemplate', 'false');
@@ -332,6 +333,8 @@ function translate_tv() {
             }
         });
         
+        // Закоментовано додавання кнопки translate_tv
+        /*
         Lampa.SettingsApi.addParam({
             component: 'card_custom',
             param: {
@@ -351,6 +354,7 @@ function translate_tv() {
                 }
             }
         });
+        */
         
         Lampa.SettingsApi.addParam({
             component: 'card_custom',
@@ -401,7 +405,7 @@ function translate_tv() {
     // Регистрация плагина в манифесте
     Lampa.Manifest.plugins = {
         name: 'card_custom',
-        version: '2.6.2',
+        version: '2.6.3',
         description: 'Custom cards'
     };
 
