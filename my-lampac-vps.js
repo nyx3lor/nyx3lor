@@ -4,7 +4,7 @@
     Lampa.Platform.tv();
 
     // Фиксированный адрес сервера
-    var default_server = '193.169.241.242:12123';
+    var default_server = '45.87.155.89:12123';
     var server_protocol = 'http://';   
     Lampa.Storage.set('location_server', default_server);
     Lampa.Storage.set('const_redirect', true);
@@ -35,7 +35,7 @@
                 name: 'location_server',
                 type: 'input',
                 values: '',
-                placeholder: 'Сервер: 193.169.241.242:12123',
+                placeholder: 'Сервер: 45.87.155.89:12123',
                 default: default_server
             },
             field: {
